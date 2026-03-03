@@ -23,16 +23,18 @@ pipeline {
             }
         }
 
-        stage('SCA Scan') {
-            steps {
-                sh '''
-                    dependency-check.sh \
-                      --project "TP-Jenkins" \
-                      --scan . \
-                      --format HTML \
-                      --out dependency-check-report
-                '''
-            }
+               stage('SCA Scan') {
+          steps {
+            sh '''
+              mkdir -p odc-data dependency-check-report
+              dependency-check.sh \
+                --project "TP-Jenkins" \
+                --scan . \
+                --format HTML \
+                --out dependency-check-report \
+                --data odc-data
+            '''
+          }
         }
     }
 
