@@ -5,11 +5,10 @@ pipeline {
 
         stage('Clone Repository') {
           steps {
-            git 'https://github.com/user/project.git'
+            git branch: 'main', url: 'https://github.com/Simohamed05/TP-Jenkins-Security.git'
           }
         }
-
-        stage('Install Dependencies') {
+                stage('Install Dependencies') {
           steps {
             sh 'pip3 install -r requirements.txt'
           }
