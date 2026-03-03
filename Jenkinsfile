@@ -3,23 +3,25 @@ pipeline {
 
     stages {
 
-        stage('Clone Repository') {
+        stage('Install Dependencies') {
           steps {
-            git branch: 'main', url: 'https://github.com/Simohamed05/TP-Jenkins-Security.git'
-          }
-        }
-                stage('Install Dependencies') {
-          steps {
-            sh 'pip3 install -r requirements.txt'
+            sh '''
+              python3 -m venv .venv
+              . .venv/bin/activate
+              pip install --upgrade pip
+              pip install -r requirements.txt
+            '''
           }
         }
         
         stage('Run Tests') {
           steps {
-            sh 'pytest -q'
+            sh '''
+              . .venv/bin/activate
+              pytest -q
+            '''
           }
         }
-
         stage('SCA Scan') {
             steps {
                 sh 'dependency-check.sh --project "TP-Jenkins" --scan . --format HTML'
