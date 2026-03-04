@@ -23,7 +23,7 @@ pipeline {
             }
         }
 
-               stage('SCA Scan') {
+        stage('SCA Scan') {
           steps {
             sh '''
               mkdir -p odc-data dependency-check-report
@@ -32,7 +32,8 @@ pipeline {
                 --scan . \
                 --format HTML \
                 --out dependency-check-report \
-                --data odc-data
+                --data odc-data \
+                --noupdate
             '''
           }
         }
