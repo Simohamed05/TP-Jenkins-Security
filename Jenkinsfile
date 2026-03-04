@@ -1,54 +1,66 @@
 pipeline {
-    agent any
+  agent any
 
-    stages {
+  environment {
+    VENV = ".venv"
+    ODC_DATA = "odc-data"
+    ODC_OUT  = "dependency-check-report"
+    // si tu ajoutes la clé dans Jenkins credentials -> tu peux l'injecter avec withCredentials
+  }
 
-        stage('Install Dependencies') {
-            steps {
-                sh '''
-                    python3 -m venv .venv
-                    . .venv/bin/activate
-                    pip install --upgrade pip
-                    pip install -r requirements.txt
-                '''
-            }
-        }
-
-        stage('Run Tests') {
-            steps {
-                sh '''
-                    . .venv/bin/activate
-                    pytest -q
-                '''
-            }
-        }
-
-        stage('SCA Scan') {
-          steps {
-            sh '''
-              mkdir -p odc-data dependency-check-report
-        
-              # Scan "offline": pas de NVD update, pas de RetireJS, pas de CISA
-              dependency-check.sh \
-                --project "TP-Jenkins" \
-                --scan . \
-                --format HTML \
-                --out dependency-check-report \
-                --data odc-data \
-                --noupdate \
-                --disableRetireJS \
-                --disableKnownExploited
-            '''
-          }
-        }
+  stages {
+    stage('Checkout') {
+      steps {
+        checkout scm
+      }
     }
 
-    post {
-        success {
-            echo 'Pipeline executed successfully!'
-        }
-        failure {
-            echo 'Build failed due to errors or vulnerabilities'
-        }
+    stage('Install Dependencies') {
+      steps {
+        sh '''
+          python3 -m venv .venv
+          . .venv/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt
+        '''
+      }
     }
+
+    stage('Run Tests') {
+      steps {
+        sh '''
+          . .venv/bin/activate
+          pytest -q
+        '''
+      }
+    }
+
+    stage('SCA Scan (OWASP Dependency-Check)') {
+      steps {
+        sh '''
+          set -e
+          mkdir -p "${ODC_DATA}" "${ODC_OUT}"
+
+          command -v dependency-check.sh
+
+          # 1er build: enlève --noupdate pour télécharger la DB
+          dependency-check.sh \
+            --project "TP-Jenkins" \
+            --scan . \
+            --format HTML \
+            --out "${ODC_OUT}" \
+            --data "${ODC_DATA}" \
+            --disableRetireJS \
+            --disableKnownExploited
+        '''
+      }
+    }
+  }
+
+  post {
+    always {
+      archiveArtifacts artifacts: 'dependency-check-report/**', fingerprint: true, allowEmptyArchive: true
+      junit 'test-results.xml'
+    }
+  }
 }
