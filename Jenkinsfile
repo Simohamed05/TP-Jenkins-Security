@@ -1,14 +1,8 @@
 pipeline {
   agent any
 
-  environment {
-    VENV = ".venv"
-    ODC_DATA = "odc-data"
-    ODC_OUT  = "dependency-check-report"
-    // si tu ajoutes la clé dans Jenkins credentials -> tu peux l'injecter avec withCredentials
-  }
-
   stages {
+
     stage('Checkout') {
       steps {
         checkout scm
@@ -38,20 +32,17 @@ pipeline {
     stage('SCA Scan (OWASP Dependency-Check)') {
       steps {
         sh '''
-          set -e
-          mkdir -p "${ODC_DATA}" "${ODC_OUT}"
+          mkdir -p odc-data dependency-check-report
 
-          command -v dependency-check.sh
-
-          # 1er build: enlève --noupdate pour télécharger la DB
           dependency-check.sh \
             --project "TP-Jenkins" \
             --scan . \
             --format HTML \
-            --out "${ODC_OUT}" \
-            --data "${ODC_DATA}" \
+            --out dependency-check-report \
+            --data odc-data \
             --disableRetireJS \
-            --disableKnownExploited
+            --disableKnownExploited \
+            --disableAssembly
         '''
       }
     }
@@ -59,7 +50,7 @@ pipeline {
 
   post {
     always {
-      archiveArtifacts artifacts: 'dependency-check-report/**', fingerprint: true, allowEmptyArchive: true
+      archiveArtifacts artifacts: 'dependency-check-report/**', fingerprint: true
       junit 'test-results.xml'
     }
   }
