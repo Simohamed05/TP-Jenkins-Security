@@ -35,7 +35,8 @@ pipeline {
                       --out dependency-check-report \
                       --data odc-data \
                       --disableRetireJS \
-                      --disableKnownExploited
+                      --disableKnownExploited \
+                      --failOnCVSS 7
                 '''
             }
         }
