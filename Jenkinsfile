@@ -51,8 +51,8 @@ pipeline {
                               -Dsonar.projectKey=TP-Jenkins-Security \
                               -Dsonar.projectName=TP-Jenkins-Security \
                               -Dsonar.sources=. \
-                              -Dsonar.host.url=http://sonarqube:9000 \
-                              -Dsonar.token=$SONAR_AUTH_TOKEN
+                              -Dsonar.exclusions=.venv/**,odc-data/**,dependency-check-report/**,**/*.html,**/*.js \
+                              -Dsonar.python.version=3.13
                         """
                     }
                 }
