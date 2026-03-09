@@ -30,7 +30,7 @@ pipeline {
       steps {
         sh '''
           . .venv/bin/activate
-          pytest -q
+          pytest -q --junitxml=test-results.xml
         '''
       }
     }
