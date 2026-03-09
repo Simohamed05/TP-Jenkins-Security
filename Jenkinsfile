@@ -23,25 +23,25 @@ pipeline {
             }
         }
 
-        stage('SCA Scan') {
-            steps {
-                sh '''
-                    mkdir -p odc-data dependency-check-report
-                    dependency-check.sh \
-                      --project "TP-Jenkins" \
-                      --scan . \
-                      --format HTML \
-                      --out dependency-check-report \
-                      --data odc-data \
-                      --disableRetireJS \
-                      --disableKnownExploited \
-                      --disableAssembly \
-                      --failOnCVSS 7
-                '''
-            }
+       stage('SCA Scan') {
+        steps {
+            sh '''
+                mkdir -p odc-data dependency-check-report
+                dependency-check.sh \
+                  --project "TP-Jenkins" \
+                  --scan . \
+                  --format HTML \
+                  --out dependency-check-report \
+                  --data odc-data \
+                  --disableRetireJS \
+                  --disableKnownExploited \
+                  --disableAssembly \
+                  --failOnCVSS 7
+            '''
         }
+    }
 
-        stage('SAST Scan') {
+           stage('SAST Scan') {
             steps {
                 script {
                     def scannerHome = tool 'SonarScanner'
@@ -51,6 +51,8 @@ pipeline {
                               -Dsonar.projectKey=TP-Jenkins-Security \
                               -Dsonar.projectName=TP-Jenkins-Security \
                               -Dsonar.sources=. \
+                              -Dsonar.host.url=http://sonarqube:9000 \
+                              -Dsonar.token=$SONAR_AUTH_TOKEN \
                               -Dsonar.exclusions=.venv/**,odc-data/**,dependency-check-report/**,**/*.html,**/*.js \
                               -Dsonar.python.version=3.13
                         """
